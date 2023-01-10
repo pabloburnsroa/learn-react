@@ -1,2 +1,1 @@
-# upgraded-potato
 # learn-react
