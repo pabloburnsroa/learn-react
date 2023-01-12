@@ -1,70 +1,112 @@
-# Getting Started with Create React App
+# React Knowledge Base
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## UseEffect Cleanup Functions
 
-## Available Scripts
+UseEffect can optionally have a cleanup function after it. When the values changes, the original cleanup func is called before useEffect func is called.
 
-In the project directory, you can run:
+```
+useEffect(() =>
+let isCancelled = false
+fetch()
+  .then((res) => res.json())
+  .then((json) => {
+    if(!isCancelled){
+      setData(json)
+    }
+  })
+return () => {
+isCancelled = true
+}
+}, [])
+```
 
-### `npm start`
+Above ^
+If component gets unmounted, cancel the current fetch if it hasn't already completed.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Referencing state inside a useEffect that alters that state
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+TODO
 
-### `npm test`
+## You don't need useEffect for transforming data
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Updating total - when items change thats an effect. We can do this directly inside of the function instead of within a useEffect. We can use a useMemo() only when really need to (i.e. expensive calculations)
 
-### `npm run build`
+```
+const total = items.reduce((currentTotal,item) => {
+  return currentTotal + item.price;
+}, 0);
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## You don't need use effect to communicate with parents
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+We can use an eventHandler() instead
+Below, we might be introducing additional renders
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```
+useEffect(() => {
+    if (isOpen) {
+      onOpen();
+    } else {
+      onClose();
+    }
+  }, [isOpen]);
+```
 
-### `npm run eject`
+May be better to move these affects (onOpen()... ) closer to where the state changed happened.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```
+function toggleView() {
+    const nextIsOpen = !isOpen;
+    setIsOpen(!isOpen);
+    if (nextIsOpen) {
+      onOpen();
+    } else {
+      onClose();
+    }
+  }
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+We can even refactor it into a hook
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```
+function useToggle({ onOpen, onClose }) {
+  const [isOpen, setIsOpen] = useState(false);
+  function toggler() {
+    const nextIsOpen = !isOpen;
+    setIsOpen(nextIsOpen);
+    if (nextIsOpen) {
+      onOpen();
+    } else {
+      onClose();
+    }
+  }
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+  return [isOpen, toggler];
+}
+```
 
-## Learn More
+## You don't need useEffect for subscribing to external stores
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+useSyncExternalStore() instead???
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```
+function Product({ id }) {
+  const isConnected = useSyncExternalStore(
+    // subscribe
+    storeApi.subscribe,
+    // get snapshot
+    () => storeApi.getStatus() === 'connected',
+    // get server snapshot so can run on server side rendering
+    true
+  );
+  // ....
+}
+```
 
-### Code Splitting
+## You don't need useEffect for fetching data
+renderAsYouFetch()
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Use frameworks
+useQuery() from react-query works well for fetching data
+Next.js - getServerSideProps()
 
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
