@@ -1,7 +1,8 @@
 import './App.css';
-import CompoundComponentPattern from './compoundComponentPattern';
+
 import LearnUseMemo from './learnUseMemo';
 import MasteringUseEffect from './masteringUseEffect';
+import Counter from './react-compound-components/Counter';
 
 const App = () => {
   return (
@@ -9,7 +10,15 @@ const App = () => {
       <header className="App-header">Lets practice our React skills!</header>
       {/* <LearnUseMemo /> */}
       {/* <MasteringUseEffect /> */}
-      <CompoundComponentPattern/>
+      <div>
+      <Counter>
+          <Counter.Decrease icon="◀️" />
+          <div>
+            <Counter.Count />
+          </div>
+          <Counter.Increase icon="▶️" />
+        </Counter>
+      </div>
     </div>
   );
 };
